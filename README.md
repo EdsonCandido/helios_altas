@@ -167,7 +167,7 @@ Responsável por:
 - usuários;
 - parceiros;
 - notificações;
-- persistência;
+- persistência com Drizzle ORM;
 - API REST.
 
 ---
@@ -262,6 +262,16 @@ O banco utiliza:
 ```text
 PostgreSQL 18
 PostGIS
+Drizzle ORM
+```
+
+Migrations:
+
+```bash
+cd apps/server
+npm run db:generate
+npm run db:migrate
+npm run db:seed
 ```
 
 O PostgreSQL não deve ficar acessível publicamente.
@@ -299,6 +309,7 @@ Instalar:
 - Docker
 - Docker Compose
 - Git
+- Node.js 24.15+
 
 Em ambiente Linux, verificar:
 
@@ -306,6 +317,7 @@ Em ambiente Linux, verificar:
 docker --version
 docker compose version
 git --version
+node --version
 ```
 
 ---
@@ -320,11 +332,49 @@ cp .env.example .env
 
 Nunca versionar `.env` com secrets reais.
 
+Se a rede Docker `proxy` ainda não existir no servidor:
+
+```bash
+docker network create proxy
+```
+
 ---
 
 # Execução
 
-Subir a infraestrutura:
+## Desenvolvimento local
+
+Sobe só PostgreSQL/PostGIS e Redis, com portas em `127.0.0.1`.
+
+A imagem oficial `postgis/postgis` não publica `linux/arm64`. O Compose usa `imresamu/postgis:18-3.6-bookworm`, PostgreSQL 18 + PostGIS 3.6, com manifesto `amd64` e `arm64`.
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres redis
+```
+
+Backend:
+
+```bash
+cd apps/server
+npm install
+npm run db:migrate
+npm run db:seed
+npm run dev
+```
+
+Frontend:
+
+```bash
+cd apps/web
+npm install
+npx ng serve
+```
+
+A API fica em `http://localhost:3000`. O Angular fica em `http://localhost:4200`.
+
+## Produção / Compose completo
+
+O Compose de produção espera a rede externa `proxy`. PostgreSQL e Redis não publicam porta e não entram nessa rede.
 
 ```bash
 docker compose up -d
