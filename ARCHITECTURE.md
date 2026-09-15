@@ -106,7 +106,7 @@ apps/web/src/app/
 
 # 5. Backend
 
-O backend é um monólito modular em Node.js + TypeScript + Express.
+O backend é um monólito modular em Node.js + TypeScript + Express + Drizzle ORM.
 
 Estrutura:
 
@@ -122,11 +122,14 @@ apps/server/src/
 ├── utils/
 ├── schemas/
 ├── events/
+├── db/
 ├── modules/
 └── index.ts
 ```
 
 A regra de negócio pertence principalmente aos módulos e services.
+
+O schema Drizzle vive apenas em `apps/server/src/db/schema`. Controllers e services não importam tabelas. Queries geográficas (`ST_DWithin`, `ST_Distance`, `ST_SnapToGrid`) ficam nos repositories via `sql` do Drizzle. A primeira migration habilita `postgis` e `citext` em SQL, porque o Drizzle não cria extensões sozinho.
 
 ---
 
@@ -279,7 +282,7 @@ Não permitir transições arbitrárias diretamente pelo controller.
 
 Uma solicitação pode ser apresentada a vários parceiros.
 
-Quando a regra for de atendimento exclusivo, o aceite deve ser atômico.
+O MVP usa atendimento exclusivo (`exclusiveAssignment = true`). O aceite deve ser atômico.
 
 O backend deve utilizar transação, locking ou mecanismo equivalente para impedir:
 
@@ -408,7 +411,7 @@ SMS
 
 em momentos diferentes.
 
-O mobile não faz parte do MVP.
+O mobile não faz parte do MVP. A entrega web usa Socket.io no mesmo processo HTTP, sala `user:{userId}`.
 
 ---
 
@@ -427,7 +430,7 @@ service_request_partners
 notifications
 ```
 
-O banco deve utilizar migrations versionadas.
+O banco deve utilizar migrations versionadas do Drizzle (`drizzle-kit generate` e `npm run db:migrate`).
 
 O PostgreSQL não deve ser acessado pelo frontend.
 
@@ -538,9 +541,13 @@ A modularidade atual deve facilitar essa evolução, mas não antecipá-la.
 
 Escolhido para reduzir complexidade.
 
+### Drizzle ORM
+
+Escolhido para tipar persistência sem esconder PostGIS. O aceite exclusivo usa `db.transaction` e `.for("update")`.
+
 ### PostgreSQL + PostGIS
 
-Escolhido porque geolocalização é parte fundamental do domínio.
+Escolhido porque geolocalização é parte fundamental do domínio. A imagem oficial `postgis/postgis` só publica `linux/amd64`. O Compose usa `imresamu/postgis:18-3.6-bookworm`: PostgreSQL 18, PostGIS 3.6, manifesto `amd64` e `arm64`. Volume em `/var/lib/postgresql` (mudança do PostgreSQL 18).
 
 ### Redis + BullMQ
 

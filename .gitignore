@@ -1,0 +1,13 @@
+.env
+.env.local
+.env.*.local
+node_modules
+dist
+.angular
+.DS_Store
+*.log
+coverage
+.idea
+.vscode
+*.tsbuildinfo
+apps/server/drizzle/meta/_journal.json.bak

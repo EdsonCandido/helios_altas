@@ -213,7 +213,7 @@ interface PartnerRepository {
 }
 ```
 
-Queries geográficas devem permanecer na camada de persistência.
+Queries geográficas devem permanecer na camada de persistência, usando `sql` do Drizzle. O schema fica em `src/db/schema`. Controller e service não importam tabelas.
 
 ---
 
@@ -659,18 +659,20 @@ docs/update-architecture
 
 # 28. Commits
 
-Preferir Conventional Commits.
+Usar Conventional Commits.
+
+O type fica em inglês. A descrição fica em português, no infinitivo e em minúsculas.
 
 Exemplos:
 
 ```text
-feat: add partner registration
-feat: implement nearby partner search
-fix: prevent duplicate service request acceptance
-refactor: extract notification service
-docs: update architecture documentation
-chore: update docker compose
-test: add service request tests
+feat(auth): adicionar autenticação por dois fatores
+feat(matching): implementar busca de parceiros próximos
+fix(service-request): impedir aceite duplicado
+refactor(notifications): extrair serviço de notificação
+docs(architecture): atualizar decisões do drizzle
+chore(docker): atualizar compose
+test(service-request): adicionar testes da máquina de estados
 ```
 
 ---
