@@ -6,6 +6,7 @@ import { authInterceptor } from "./core/auth/auth.interceptor";
 import { AuthStore } from "./core/auth/auth.store";
 import { loadAppConfig } from "./core/config";
 import { SocketService } from "./core/socket/socket.service";
+import { ThemeStore } from "./core/theme/theme.store";
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -13,6 +14,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAppInitializer(async () => {
+      inject(ThemeStore);
       const auth = inject(AuthStore);
       const socket = inject(SocketService);
       await loadAppConfig();

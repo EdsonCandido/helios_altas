@@ -1,36 +1,79 @@
-import { CategoryNotFoundError, ConflictError, NotFoundError } from "../../utils/errors.js";
+import {
+  CategoryNotFoundError,
+  ConflictError,
+  NotFoundError,
+  UserAlreadyExistsError,
+} from "../../utils/errors.js";
+import { hashPassword } from "../../utils/password.js";
+import { toPublicUser } from "../auth/to-public-user.js";
 import { categoryRepository } from "../categories/category.repository.js";
 import { partnerRepository } from "../partners/partner.repository.js";
 import { serviceRequestRepository } from "../service-requests/service-request.repository.js";
 import type { ServiceRequestStatus } from "../service-requests/service-request-status.js";
 import { userRepository } from "../users/user.repository.js";
 
+type AdminUserRole = "CLIENT" | "PARTNER" | "ADMIN";
+type AdminUserStatus = "ACTIVE" | "INACTIVE" | "BLOCKED";
+
+export type AdminUpdateUserInput = {
+  name?: string;
+  email?: string;
+  phone?: string;
+  role?: AdminUserRole;
+  status?: AdminUserStatus;
+  isActive?: boolean;
+};
+
 export class AdminService {
   listUsers(input: {
     query?: string;
-    role?: "CLIENT" | "PARTNER" | "ADMIN";
-    status?: "ACTIVE" | "INACTIVE" | "BLOCKED";
+    role?: AdminUserRole;
+    status?: AdminUserStatus;
     page: number;
     pageSize: number;
   }) {
     return userRepository.list(input);
   }
 
-  async updateUser(
-    actorId: string,
-    userId: string,
-    input: { status?: "ACTIVE" | "INACTIVE" | "BLOCKED"; isActive?: boolean },
-  ) {
+  async updateUser(actorId: string, userId: string, input: AdminUpdateUserInput) {
     const user = await userRepository.findById(userId);
     if (!user) {
       throw new NotFoundError("USER_NOT_FOUND", "User was not found.");
     }
 
-    return userRepository.update(userId, {
+    if (input.email && input.email.toLowerCase() !== user.email.toLowerCase()) {
+      const existing = await userRepository.findByEmail(input.email);
+      if (existing && existing.id !== userId) {
+        throw new UserAlreadyExistsError();
+      }
+    }
+
+    const updated = await userRepository.update(userId, {
+      name: input.name,
+      email: input.email,
+      phone: input.phone,
+      role: input.role,
       status: input.status,
       isActive: input.isActive ?? (input.status ? input.status === "ACTIVE" : undefined),
       updatedBy: actorId,
     });
+
+    return toPublicUser(updated);
+  }
+
+  async resetUserPassword(actorId: string, userId: string, newPassword: string) {
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundError("USER_NOT_FOUND", "User was not found.");
+    }
+
+    await userRepository.update(userId, {
+      passwordHash: await hashPassword(newPassword),
+      updatedBy: actorId,
+    });
+    await userRepository.revokeRefreshTokensByUserId(userId);
+
+    return { ok: true as const };
   }
 
   listCategories() {

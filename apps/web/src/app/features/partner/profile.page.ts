@@ -13,6 +13,7 @@ import { PartnerApiService } from "./partner-api.service";
         <div>
           <p class="kicker">Base</p>
           <h1>Perfil do parceiro</h1>
+          <p class="lede">Sua âncora no território: raio, serviços e disponibilidade.</p>
         </div>
       </header>
       @if (loading()) {
@@ -61,7 +62,7 @@ import { PartnerApiService } from "./partner-api.service";
               <p class="status status-success">Perfil atualizado</p>
             }
           </div>
-          <div class="stack">
+          <div class="panel stack">
             <p class="panel-title">Base de atendimento</p>
             <app-map
               [center]="[latitude || -23.55, longitude || -46.63]"

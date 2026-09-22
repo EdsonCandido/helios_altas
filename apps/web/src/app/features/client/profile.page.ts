@@ -11,6 +11,7 @@ import { ClientApiService } from "./client-api.service";
         <div>
           <p class="kicker">Conta</p>
           <h1>Meu perfil</h1>
+          <p class="lede">Endereço-base para pedidos em casa e atalhos no mapa.</p>
         </div>
       </header>
       @if (loading()) {

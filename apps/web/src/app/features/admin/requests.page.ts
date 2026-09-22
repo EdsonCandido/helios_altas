@@ -12,6 +12,7 @@ import { AdminApiService } from "./admin-api.service";
         <div>
           <p class="kicker">Operação</p>
           <h1>Solicitações</h1>
+          <p class="lede">Varredura do fluxo: do primeiro pedido ao desfecho no mapa.</p>
         </div>
       </header>
       <form class="toolbar" (ngSubmit)="load()">

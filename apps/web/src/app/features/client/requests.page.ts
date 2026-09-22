@@ -12,6 +12,7 @@ import { ClientApiService } from "./client-api.service";
         <div>
           <p class="kicker">Acompanhamento</p>
           <h1>Minhas solicitações</h1>
+          <p class="lede">Cada pedido, um ponto no atlas. Abra para ver o estado do campo.</p>
         </div>
         <a class="btn btn-primary" routerLink="/cliente/nova-solicitacao">Nova</a>
       </header>

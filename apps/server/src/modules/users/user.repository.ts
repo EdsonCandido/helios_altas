@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { db, type Transaction } from "../../db/index.js";
 import { clients, refreshTokens, users, type NewUser, type User } from "../../db/schema/index.js";
 
@@ -29,7 +29,9 @@ export class UserRepository {
 
   async update(
     id: string,
-    values: Partial<Pick<User, "name" | "phone" | "passwordHash" | "status" | "isActive" | "updatedBy">>,
+    values: Partial<
+      Pick<User, "name" | "email" | "phone" | "role" | "passwordHash" | "status" | "isActive" | "updatedBy">
+    >,
     executor?: Executor,
   ): Promise<User> {
     const [row] = await use(executor)
@@ -100,6 +102,13 @@ export class UserRepository {
       .update(refreshTokens)
       .set({ revokedAt: new Date() })
       .where(eq(refreshTokens.tokenHash, tokenHash));
+  }
+
+  async revokeRefreshTokensByUserId(userId: string) {
+    await db
+      .update(refreshTokens)
+      .set({ revokedAt: new Date() })
+      .where(and(eq(refreshTokens.userId, userId), isNull(refreshTokens.revokedAt)));
   }
 
   async list(input: { query?: string; role?: User["role"]; status?: User["status"]; page: number; pageSize: number }) {

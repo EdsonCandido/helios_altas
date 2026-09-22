@@ -174,7 +174,9 @@ Responsável por:
 
 # Identidade visual
 
-Paleta oficial:
+Direção: **Field Atlas** — cartografia solar / console de campo.
+
+Paleta oficial da marca:
 
 ```css
 :root {
@@ -196,7 +198,15 @@ Uso recomendado:
 | `#fcb653` | Atenção |
 | `#ff5254` | Erro/perigo |
 
-A interface deve utilizar tokens semânticos em vez de espalhar hexadecimal diretamente pelo código.
+Tipografia (Google Fonts):
+
+- **Bricolage Grotesque** — títulos e marca
+- **IBM Plex Sans** — texto de interface
+- **IBM Plex Mono** — kickers, badges e cabeçalhos de tabela
+
+Temas `light` e `dark` via `data-theme` no `html`. A preferência fica em `localStorage` (`helios.theme`) e o toggle aparece no cabeçalho e nas telas de acesso.
+
+A interface deve utilizar tokens semânticos (`--color-background`, `--color-surface`, `--color-text`, etc.) em vez de espalhar hexadecimal diretamente pelo código.
 
 ---
 

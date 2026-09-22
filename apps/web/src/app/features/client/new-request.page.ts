@@ -13,6 +13,7 @@ import { ClientApiService } from "./client-api.service";
         <div>
           <p class="kicker">Pedido</p>
           <h1>Nova solicitação</h1>
+          <p class="lede">Descreva o serviço e pinte o ponto no mapa. O resto o campo resolve.</p>
         </div>
       </header>
       @if (error()) {
@@ -46,7 +47,7 @@ import { ClientApiService } from "./client-api.service";
             {{ submitting() ? "Enviando…" : "Enviar solicitação" }}
           </button>
         </div>
-        <div class="stack">
+        <div class="panel stack">
           <p class="panel-title">Local do atendimento</p>
           <button class="btn btn-ghost" type="button" (click)="useLocation()">Usar localização atual</button>
           <app-map

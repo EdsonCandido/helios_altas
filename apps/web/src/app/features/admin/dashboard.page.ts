@@ -9,6 +9,7 @@ import { AdminApiService } from "./admin-api.service";
         <div>
           <p class="kicker">Operação</p>
           <h1>Painel operacional</h1>
+          <p class="lede">Leitura viva do campo: volume, fila e desfecho das solicitações.</p>
         </div>
       </header>
       @if (loading()) {

@@ -12,6 +12,7 @@ import { PartnerApiService } from "./partner-api.service";
         <div>
           <p class="kicker">Arquivo</p>
           <h1>Histórico</h1>
+          <p class="lede">Atendimentos encerrados e recusas. Trilha do que já passou.</p>
         </div>
       </header>
       @if (loading()) {

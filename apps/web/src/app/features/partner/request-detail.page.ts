@@ -9,7 +9,7 @@ import { PartnerApiService } from "./partner-api.service";
   imports: [FormsModule, RouterLink],
   template: `
     <section class="stack">
-      <a class="link-quiet" routerLink="/parceiro">Voltar</a>
+      <a class="link-quiet" routerLink="/parceiro">Voltar à caixa</a>
       @if (loading()) {
         <div class="skeleton" aria-busy="true">
           <span class="skeleton-line mid"></span>

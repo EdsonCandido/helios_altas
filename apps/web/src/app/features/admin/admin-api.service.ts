@@ -13,6 +13,10 @@ export class AdminApiService {
     return this.api.patch(`/admin/users/${id}`, body);
   }
 
+  resetUserPassword(id: string, newPassword: string) {
+    return this.api.post<{ ok: true }>(`/admin/users/${id}/reset-password`, { newPassword });
+  }
+
   categories() {
     return this.api.get<Array<Record<string, unknown>>>("/admin/categories");
   }
