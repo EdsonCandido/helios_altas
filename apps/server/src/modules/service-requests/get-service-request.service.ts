@@ -16,6 +16,7 @@ export class GetServiceRequest {
     const request = detail.request;
     const isOwner = detail.clientUserId === actor.id;
     const isAcceptedPartner = detail.acceptedPartnerUserId === actor.id;
+    let inviteStatus: string | undefined;
     let isInvitedPartner = false;
 
     if (actor.role === "PARTNER") {
@@ -23,6 +24,7 @@ export class GetServiceRequest {
       if (partner) {
         const invitation = await serviceRequestRepository.findInvitation(serviceRequestId, partner.id);
         isInvitedPartner = Boolean(invitation);
+        inviteStatus = invitation?.status;
       }
     }
 
@@ -30,11 +32,18 @@ export class GetServiceRequest {
       throw new UnauthorizedServiceRequestAccessError();
     }
 
-    const canSeeExactLocation = isOwner || isAcceptedPartner || actor.role === "ADMIN";
+    // Invited partners need exact location to decide accept/reject.
+    const canSeeExactLocation =
+      isOwner ||
+      isAcceptedPartner ||
+      actor.role === "ADMIN" ||
+      inviteStatus === "PENDING" ||
+      inviteStatus === "ACCEPTED";
 
     return {
       id: request.id,
       status: request.status,
+      inviteStatus,
       description: request.description,
       categoryName: detail.categoryName,
       isHomeService: request.isHomeService,
@@ -42,6 +51,7 @@ export class GetServiceRequest {
       neighborhood: request.neighborhood,
       address: canSeeExactLocation ? request.address : undefined,
       addressNumber: canSeeExactLocation ? request.addressNumber : undefined,
+      state: canSeeExactLocation ? request.state : undefined,
       latitude: canSeeExactLocation ? Number(request.latitude) : undefined,
       longitude: canSeeExactLocation ? Number(request.longitude) : undefined,
       acceptedPartnerName: detail.acceptedPartnerName,

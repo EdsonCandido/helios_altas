@@ -43,7 +43,7 @@ import { ClientApiService } from "./client-api.service";
         </div>
       } @else {
         <div class="result-grid">
-          @for (partner of partners(); track partner.id) {
+          @for (partner of partners(); track partner.id + ':' + partner.categoryId) {
             <a class="list-card" [routerLink]="['/cliente/parceiros', partner.id]">
               <div class="list-card-top">
                 <strong>{{ partner.name }}</strong>
@@ -72,6 +72,7 @@ export class SearchPage {
       id: string;
       name: string;
       category: string;
+      categoryId: string;
       distanceMeters: number;
       minimumVisitFeeCents: number;
       isAvailable: boolean;

@@ -229,7 +229,11 @@ export class PartnerProfilePage {
           this.api
             .availability({
               isAvailable: this.isAvailable,
-              windows: [{ weekday: new Date().getDay(), startMinutes: 0, endMinutes: 1440 }],
+              windows: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({
+                weekday,
+                startMinutes: 0,
+                endMinutes: 1440,
+              })),
             })
             .subscribe();
           this.api

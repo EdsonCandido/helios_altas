@@ -282,15 +282,22 @@ export class ServiceRequestRepository {
       filters.push(lte(serviceRequests.createdAt, input.to));
     }
 
+    // Literal grid size: Drizzle would bind ${gridSize} as distinct $1/$2/$3 and
+    // Postgres would reject the GROUP BY as unequal expressions.
+    const grid = sql.raw(String(Number(input.gridSize)));
+
     return db
       .select({
-        latitude: sql<number>`ST_Y(ST_SnapToGrid(${serviceRequests.location}::geometry, ${input.gridSize}))`,
-        longitude: sql<number>`ST_X(ST_SnapToGrid(${serviceRequests.location}::geometry, ${input.gridSize}))`,
+        latitude: sql<number>`ST_Y(ST_SnapToGrid(${serviceRequests.location}::geometry, ${grid}))`,
+        longitude: sql<number>`ST_X(ST_SnapToGrid(${serviceRequests.location}::geometry, ${grid}))`,
         count: sql<number>`count(*)::int`,
       })
       .from(serviceRequests)
       .where(and(...filters))
-      .groupBy(sql`ST_SnapToGrid(${serviceRequests.location}::geometry, ${input.gridSize})`);
+      .groupBy(
+        sql`ST_Y(ST_SnapToGrid(${serviceRequests.location}::geometry, ${grid}))`,
+        sql`ST_X(ST_SnapToGrid(${serviceRequests.location}::geometry, ${grid}))`,
+      );
   }
 
   async indicators() {

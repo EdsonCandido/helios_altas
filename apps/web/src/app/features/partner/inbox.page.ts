@@ -1,5 +1,5 @@
 import { Component, inject, signal } from "@angular/core";
-import { RouterLink } from "@angular/router";
+import { Router, RouterLink } from "@angular/router";
 import { statusClass, statusLabel } from "../../shared/ui/status";
 import { PartnerApiService } from "./partner-api.service";
 
@@ -27,8 +27,8 @@ import { PartnerApiService } from "./partner-api.service";
         </div>
       } @else {
         <div class="record-cards">
-          @for (item of items(); track item["id"]) {
-            <a class="list-card" [routerLink]="['/parceiro/solicitacoes', item['id']]">
+          @for (item of items(); track itemId(item)) {
+            <article class="list-card panel" role="link" tabindex="0" (click)="open(item)" (keydown.enter)="open(item)">
               <div class="list-card-top">
                 <strong>{{ item["categoryName"] }}</strong>
                 <span [class]="statusClass(item['inviteStatus'] ?? item['status'])">
@@ -37,7 +37,16 @@ import { PartnerApiService } from "./partner-api.service";
               </div>
               <p class="meta">{{ item["city"] }}</p>
               <p class="meta clamp">{{ item["description"] }}</p>
-            </a>
+              <div class="actions">
+                <a
+                  class="btn btn-primary"
+                  [routerLink]="['/parceiro/solicitacoes', itemId(item)]"
+                  (click)="$event.stopPropagation()"
+                >
+                  Abrir
+                </a>
+              </div>
+            </article>
           }
         </div>
         <div class="table-wrap">
@@ -48,22 +57,28 @@ import { PartnerApiService } from "./partner-api.service";
                 <th>Cidade</th>
                 <th>Descrição</th>
                 <th>Status</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
-              @for (item of items(); track item["id"]) {
-                <tr>
-                  <td>
-                    <a class="row-link" [routerLink]="['/parceiro/solicitacoes', item['id']]">
-                      {{ item["categoryName"] }}
-                    </a>
-                  </td>
+              @for (item of items(); track itemId(item)) {
+                <tr class="clickable-row" (click)="open(item)">
+                  <td>{{ item["categoryName"] }}</td>
                   <td>{{ item["city"] }}</td>
                   <td class="clamp">{{ item["description"] }}</td>
                   <td>
                     <span [class]="statusClass(item['inviteStatus'] ?? item['status'])">
                       {{ statusLabel(item["inviteStatus"] ?? item["status"]) }}
                     </span>
+                  </td>
+                  <td>
+                    <a
+                      class="btn btn-ghost btn-sm"
+                      [routerLink]="['/parceiro/solicitacoes', itemId(item)]"
+                      (click)="$event.stopPropagation()"
+                    >
+                      Abrir
+                    </a>
                   </td>
                 </tr>
               }
@@ -76,6 +91,7 @@ import { PartnerApiService } from "./partner-api.service";
 })
 export class PartnerInboxPage {
   private readonly api = inject(PartnerApiService);
+  private readonly router = inject(Router);
   items = signal<Array<Record<string, unknown>>>([]);
   loading = signal(true);
   readonly statusLabel = statusLabel;
@@ -89,5 +105,17 @@ export class PartnerInboxPage {
       },
       error: () => this.loading.set(false),
     });
+  }
+
+  itemId(item: Record<string, unknown>): string {
+    return String(item["id"] ?? "");
+  }
+
+  open(item: Record<string, unknown>): void {
+    const id = this.itemId(item);
+    if (!id) {
+      return;
+    }
+    void this.router.navigate(["/parceiro/solicitacoes", id]);
   }
 }
