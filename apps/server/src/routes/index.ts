@@ -133,6 +133,12 @@ export function createRoutes(): Router {
   );
 
   router.get("/admin/users", authenticate, authorize("ADMIN"), asyncHandler(adminController.users.bind(adminController)));
+  router.post(
+    "/admin/users/:id/reset-password",
+    authenticate,
+    authorize("ADMIN"),
+    asyncHandler(adminController.resetUserPassword.bind(adminController)),
+  );
   router.patch(
     "/admin/users/:id",
     authenticate,

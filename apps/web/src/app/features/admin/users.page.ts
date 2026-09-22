@@ -16,7 +16,7 @@ type UserStatus = "ACTIVE" | "INACTIVE" | "BLOCKED";
         <div>
           <p class="kicker">Gestão</p>
           <h1>Usuários</h1>
-          <p class="lede">Filtre o campo, edite cadastro e ajuste status sem sair da lista.</p>
+          <p class="lede">Filtre o campo, edite cadastro, resetar senha e ajuste status sem sair da lista.</p>
         </div>
       </header>
       <form class="toolbar" (ngSubmit)="handleFilter()">
@@ -70,16 +70,22 @@ type UserStatus = "ACTIVE" | "INACTIVE" | "BLOCKED";
                 <span [class]="statusClass(user['status'])">{{ statusLabel(user["status"]) }}</span>
               </div>
               <p class="meta">{{ user["email"] }} · {{ user["phone"] }} · {{ roleLabel(user["role"]) }}</p>
-              <div class="row">
+              <div class="row table-actions">
+                <label class="sr-only" [attr.for]="'status-card-' + user['id']">Status</label>
+                <select
+                  class="table-actions-select"
+                  [id]="'status-card-' + user['id']"
+                  [name]="'status-card-' + user['id']"
+                  [ngModel]="user['status']"
+                  (ngModelChange)="handleSetStatus(user, $event)"
+                >
+                  <option value="ACTIVE">Ativo</option>
+                  <option value="INACTIVE">Inativo</option>
+                  <option value="BLOCKED">Bloqueado</option>
+                </select>
                 <button class="btn btn-ghost btn-sm" type="button" (click)="handleEdit(user)">Editar</button>
-                <button class="btn btn-ghost btn-sm" type="button" (click)="handleSetStatus(user, 'ACTIVE')">
-                  Ativar
-                </button>
-                <button class="btn btn-ghost btn-sm" type="button" (click)="handleSetStatus(user, 'INACTIVE')">
-                  Desativar
-                </button>
-                <button class="btn btn-danger btn-sm" type="button" (click)="handleSetStatus(user, 'BLOCKED')">
-                  Bloquear
+                <button class="btn btn-ghost btn-sm" type="button" (click)="handleReset(user)">
+                  Resetar senha
                 </button>
               </div>
             </article>
@@ -108,16 +114,22 @@ type UserStatus = "ACTIVE" | "INACTIVE" | "BLOCKED";
                     <span [class]="statusClass(user['status'])">{{ statusLabel(user["status"]) }}</span>
                   </td>
                   <td class="col-actions">
-                    <div class="row">
+                    <div class="row table-actions">
+                      <label class="sr-only" [attr.for]="'status-row-' + user['id']">Status</label>
+                      <select
+                        class="table-actions-select"
+                        [id]="'status-row-' + user['id']"
+                        [name]="'status-row-' + user['id']"
+                        [ngModel]="user['status']"
+                        (ngModelChange)="handleSetStatus(user, $event)"
+                      >
+                        <option value="ACTIVE">Ativo</option>
+                        <option value="INACTIVE">Inativo</option>
+                        <option value="BLOCKED">Bloqueado</option>
+                      </select>
                       <button class="btn btn-ghost btn-sm" type="button" (click)="handleEdit(user)">Editar</button>
-                      <button class="btn btn-ghost btn-sm" type="button" (click)="handleSetStatus(user, 'ACTIVE')">
-                        Ativar
-                      </button>
-                      <button class="btn btn-ghost btn-sm" type="button" (click)="handleSetStatus(user, 'INACTIVE')">
-                        Desativar
-                      </button>
-                      <button class="btn btn-danger btn-sm" type="button" (click)="handleSetStatus(user, 'BLOCKED')">
-                        Bloquear
+                      <button class="btn btn-ghost btn-sm" type="button" (click)="handleReset(user)">
+                        Resetar senha
                       </button>
                     </div>
                   </td>
@@ -178,6 +190,51 @@ type UserStatus = "ACTIVE" | "INACTIVE" | "BLOCKED";
       }
     </app-modal>
 
+    <app-modal
+      [open]="resettingUser() !== null"
+      title="Resetar senha"
+      kicker="Acesso"
+      (closed)="handleCancelReset()"
+    >
+      @if (resettingUser(); as user) {
+        <form class="stack" (ngSubmit)="handleSavePassword()">
+          <p class="meta">{{ user["name"] }} · {{ user["email"] }}</p>
+          @if (resetError()) {
+            <div class="alert alert-error" role="alert">{{ resetError() }}</div>
+          }
+          <div class="form-grid">
+            <label class="field">
+              Nova senha
+              <input
+                name="newPassword"
+                type="password"
+                [(ngModel)]="newPassword"
+                required
+                minlength="8"
+                autocomplete="new-password"
+              />
+            </label>
+            <label class="field">
+              Confirmar senha
+              <input
+                name="confirmPassword"
+                type="password"
+                [(ngModel)]="confirmPassword"
+                required
+                minlength="8"
+                autocomplete="new-password"
+              />
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-primary" type="submit" [disabled]="saving()">
+              {{ saving() ? "Resetando…" : "Resetar senha" }}
+            </button>
+            <button class="btn btn-ghost" type="button" (click)="handleCancelReset()">Cancelar</button>
+          </div>
+        </form>
+      }
+    </app-modal>
   `,
 })
 export class AdminUsersPage {
@@ -188,6 +245,8 @@ export class AdminUsersPage {
   error = signal("");
   notice = signal("");
   editingUser = signal<Record<string, unknown> | null>(null);
+  resettingUser = signal<Record<string, unknown> | null>(null);
+  resetError = signal("");
   readonly statusLabel = statusLabel;
   readonly statusClass = statusClass;
   readonly roleLabel = roleLabel;
@@ -200,6 +259,8 @@ export class AdminUsersPage {
   editPhone = "";
   editRole: UserRole = "CLIENT";
   editStatus: UserStatus = "ACTIVE";
+  newPassword = "";
+  confirmPassword = "";
 
   constructor() {
     this.reload();
@@ -211,6 +272,7 @@ export class AdminUsersPage {
 
   handleEdit(user: Record<string, unknown>): void {
     this.clearMessages();
+    this.resettingUser.set(null);
     this.editingUser.set(user);
     this.editName = String(user["name"] ?? "");
     this.editEmail = String(user["email"] ?? "");
@@ -221,6 +283,22 @@ export class AdminUsersPage {
 
   handleCancelEdit(): void {
     this.editingUser.set(null);
+  }
+
+  handleReset(user: Record<string, unknown>): void {
+    this.clearMessages();
+    this.resetError.set("");
+    this.editingUser.set(null);
+    this.resettingUser.set(user);
+    this.newPassword = "";
+    this.confirmPassword = "";
+  }
+
+  handleCancelReset(): void {
+    this.resettingUser.set(null);
+    this.resetError.set("");
+    this.newPassword = "";
+    this.confirmPassword = "";
   }
 
   handleSaveUser(): void {
@@ -253,7 +331,41 @@ export class AdminUsersPage {
       });
   }
 
+  handleSavePassword(): void {
+    const user = this.resettingUser();
+    if (!user) {
+      return;
+    }
+
+    this.resetError.set("");
+    if (this.newPassword.length < 8) {
+      this.resetError.set("A nova senha precisa ter pelo menos 8 caracteres.");
+      return;
+    }
+    if (this.newPassword !== this.confirmPassword) {
+      this.resetError.set("As senhas não coincidem.");
+      return;
+    }
+
+    this.saving.set(true);
+    this.api.resetUserPassword(String(user["id"]), this.newPassword).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.handleCancelReset();
+        this.notice.set("Senha resetada. O usuário precisa entrar de novo.");
+      },
+      error: () => {
+        this.saving.set(false);
+        this.resetError.set("Não foi possível resetar a senha.");
+      },
+    });
+  }
+
   handleSetStatus(user: Record<string, unknown>, status: UserStatus): void {
+    if (user["status"] === status) {
+      return;
+    }
+
     this.clearMessages();
     this.api.updateUser(String(user["id"]), { status }).subscribe({
       next: () => this.reload(),

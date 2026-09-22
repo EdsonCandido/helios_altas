@@ -11,9 +11,21 @@ const listUsersSchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });
 
-const updateUserSchema = z.object({
-  status: z.enum(["ACTIVE", "INACTIVE", "BLOCKED"]).optional(),
-  isActive: z.boolean().optional(),
+const updateUserSchema = z
+  .object({
+    name: z.string().min(2).max(120).optional(),
+    email: z.string().email().optional(),
+    phone: z.string().min(8).max(20).optional(),
+    role: z.enum(["CLIENT", "PARTNER", "ADMIN"]).optional(),
+    status: z.enum(["ACTIVE", "INACTIVE", "BLOCKED"]).optional(),
+    isActive: z.boolean().optional(),
+  })
+  .refine((value) => Object.values(value).some((field) => field !== undefined), {
+    message: "At least one field is required.",
+  });
+
+const resetPasswordSchema = z.object({
+  newPassword: z.string().min(8).max(72),
 });
 
 const categorySchema = z.object({
@@ -44,6 +56,14 @@ export class AdminController {
   async updateUser(req: Request, res: Response) {
     const input = updateUserSchema.parse(req.body);
     return sendData(res, await adminService.updateUser(req.authUser!.id, req.params.id!, input));
+  }
+
+  async resetUserPassword(req: Request, res: Response) {
+    const input = resetPasswordSchema.parse(req.body);
+    return sendData(
+      res,
+      await adminService.resetUserPassword(req.authUser!.id, req.params.id!, input.newPassword),
+    );
   }
 
   async categories(_req: Request, res: Response) {
