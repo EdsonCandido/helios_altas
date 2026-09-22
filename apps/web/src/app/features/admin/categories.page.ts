@@ -11,9 +11,10 @@ import { AdminApiService } from "./admin-api.service";
         <div>
           <p class="kicker">Catálogo</p>
           <h1>Categorias</h1>
+          <p class="lede">Nomeie o território de serviço. Ative só o que entra no mapa.</p>
         </div>
       </header>
-      <form class="toolbar toolbar-2" (ngSubmit)="create()">
+      <form class="toolbar" (ngSubmit)="create()">
         <label class="field">Nome <input name="name" [(ngModel)]="name" required /></label>
         <label class="field">Slug <input name="slug" [(ngModel)]="slug" required /></label>
         <button class="btn btn-primary" type="submit" [disabled]="creating()">
@@ -44,7 +45,7 @@ import { AdminApiService } from "./admin-api.service";
                   {{ item["isActive"] ? "Ativa" : "Inativa" }}
                 </span>
               </div>
-              <p class="meta">{{ item["slug"] }}</p>
+              <p class="meta mono">{{ item["slug"] }}</p>
               <div class="row">
                 <button class="btn btn-ghost btn-sm" type="button" (click)="toggle(item)">
                   {{ item["isActive"] ? "Desativar" : "Ativar" }}
@@ -60,14 +61,14 @@ import { AdminApiService } from "./admin-api.service";
                 <th>Nome</th>
                 <th>Slug</th>
                 <th>Status</th>
-                <th>Ações</th>
+                <th class="col-actions">Ações</th>
               </tr>
             </thead>
             <tbody>
               @for (item of items(); track item["id"]) {
                 <tr>
                   <td>{{ item["name"] }}</td>
-                  <td>{{ item["slug"] }}</td>
+                  <td class="mono">{{ item["slug"] }}</td>
                   <td>
                     <span
                       class="status"
@@ -77,7 +78,7 @@ import { AdminApiService } from "./admin-api.service";
                       {{ item["isActive"] ? "Ativa" : "Inativa" }}
                     </span>
                   </td>
-                  <td>
+                  <td class="col-actions">
                     <button class="btn btn-ghost btn-sm" type="button" (click)="toggle(item)">
                       {{ item["isActive"] ? "Desativar" : "Ativar" }}
                     </button>

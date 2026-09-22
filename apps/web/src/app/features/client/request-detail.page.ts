@@ -8,7 +8,7 @@ import { ClientApiService } from "./client-api.service";
   imports: [RouterLink],
   template: `
     <section class="stack">
-      <a class="link-quiet" routerLink="/cliente/solicitacoes">Voltar</a>
+      <a class="link-quiet" routerLink="/cliente/solicitacoes">Voltar às solicitações</a>
       @if (loading()) {
         <div class="skeleton" aria-busy="true">
           <span class="skeleton-line mid"></span>

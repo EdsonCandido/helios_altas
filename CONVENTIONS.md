@@ -481,9 +481,13 @@ Separar responsabilidades.
 
 # 20. Design system
 
-A aplicação deve utilizar tokens semânticos.
+A aplicação deve utilizar tokens semânticos definidos em `apps/web/src/styles.css`.
 
-Paleta Helios:
+Direção visual: **Field Atlas** (cartografia solar / console de campo).
+
+## Paleta Helios
+
+A marca permanece fixa. Hexadecimal só nos tokens, nunca nos componentes.
 
 ```css
 --color-1: #5cacc4;
@@ -493,7 +497,7 @@ Paleta Helios:
 --color-5: #ff5254;
 ```
 
-Criar tokens derivados:
+Tokens semânticos derivados:
 
 ```text
 --color-primary
@@ -508,21 +512,52 @@ Criar tokens derivados:
 --color-muted
 ```
 
-Não espalhar hexadecimais diretamente pelos componentes.
-
 Evitar:
 
 ```css
 color: #5cacc4;
 ```
 
-em dezenas de arquivos.
-
 Preferir:
 
 ```css
 color: var(--color-primary);
 ```
+
+## Tipografia
+
+Carregar via Google Fonts:
+
+- Display: **Bricolage Grotesque** (`--font-display`) — títulos, marca, métricas
+- Corpo: **IBM Plex Sans** (`--font-body`)
+- Meta: **IBM Plex Mono** (`--font-mono`) — kickers, badges, cabeçalhos de tabela
+
+Escala com salto grande: `--text-h1` usa `clamp(2.4rem, 4vw, 3.25rem)` contra `--text-body` de `0.95rem`. Pesos extremos no display (800/900), corpo em 300/400.
+
+## Temas
+
+Dois temas via `data-theme` no `html`:
+
+- `light`: papel blueprint (`#e8eef1`)
+- `dark`: ink teal (`#0c1c22`)
+
+Regras:
+
+- persistir a preferência em `localStorage` (`helios.theme`);
+- fallback: `prefers-color-scheme`;
+- aplicar o tema antes do paint (script em `index.html`) para evitar flash;
+- tokens semânticos de superfície, texto, borda e softs mudam por tema;
+- o toggle fica no shell e nas páginas de auth, com `aria-label` em português.
+
+## Padrões de UI
+
+- Espaçamento: escala `--space-1` … `--space-8`. Sem padding solto em px nas pages.
+- Listas: `.record-cards` no mobile; `.table-wrap` + `.data-table` a partir de 1024px.
+- Overlay: `app-modal` (Escape, clique no fundo, trava de scroll).
+- Filtros e criação simples: `.toolbar`.
+- Detalhe: `.detail-layout` + `.panel`.
+- Form com mapa: `.split`.
+- Touch: `--touch: 44px` no mobile.
 
 ---
 

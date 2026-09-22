@@ -8,7 +8,7 @@ import { ClientApiService } from "./client-api.service";
   imports: [CurrencyPipe, RouterLink],
   template: `
     <section class="stack">
-      <a class="link-quiet" routerLink="/cliente">Voltar</a>
+      <a class="link-quiet" routerLink="/cliente">Voltar à busca</a>
       @if (loading()) {
         <div class="skeleton" aria-busy="true">
           <span class="skeleton-line mid"></span>
@@ -19,19 +19,19 @@ import { ClientApiService } from "./client-api.service";
           <div>
             <p class="kicker">Parceiro</p>
             <h1>{{ item["name"] }}</h1>
+            <p class="lede">{{ item["neighborhood"] }}, {{ item["city"] }}</p>
           </div>
         </header>
         <div class="detail-layout">
           <article class="panel stack">
             <p>{{ item["description"] }}</p>
-            <p class="meta">{{ item["neighborhood"] }}, {{ item["city"] }}</p>
             @if (item["distanceMeters"]) {
-              <p class="meta">
-                Distância aproximada: {{ (Number(item["distanceMeters"]) / 1000).toFixed(1) }} km
-              </p>
+              <p class="meta">Distância aproximada: {{ (Number(item["distanceMeters"]) / 1000).toFixed(1) }} km</p>
             }
             @for (service of services(); track service.categoryId) {
-              <p>{{ service.categoryName }} · {{ service.minimumVisitFeeCents / 100 | currency: "BRL" }}</p>
+              <p class="meta">
+                {{ service.categoryName }} · {{ service.minimumVisitFeeCents / 100 | currency: "BRL" }}
+              </p>
             }
           </article>
           <aside class="detail-aside panel">

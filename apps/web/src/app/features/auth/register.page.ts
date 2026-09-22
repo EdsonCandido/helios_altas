@@ -2,12 +2,16 @@ import { Component, inject, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { RouterLink } from "@angular/router";
 import { AuthStore } from "../../core/auth/auth.store";
+import { ThemeToggleComponent } from "../../shared/ui/theme-toggle.component";
 
 @Component({
   selector: "app-register-page",
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, ThemeToggleComponent],
   template: `
     <section class="auth-stage">
+      <div class="auth-theme">
+        <app-theme-toggle />
+      </div>
       <div class="auth-brand">
         <p class="kicker">Helios Altas</p>
         <h1>Abra seu lugar no mapa</h1>
@@ -55,7 +59,7 @@ import { AuthStore } from "../../core/auth/auth.store";
           <button class="btn btn-primary" type="submit" [disabled]="submitting()">
             {{ submitting() ? "Cadastrando…" : "Cadastrar" }}
           </button>
-          <a routerLink="/login">Já tenho conta</a>
+          <a class="link-quiet" routerLink="/login">Já tenho conta</a>
         </form>
       </div>
     </section>

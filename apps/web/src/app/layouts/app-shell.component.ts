@@ -2,6 +2,7 @@ import { Component, inject } from "@angular/core";
 import { RouterLink, RouterLinkActive, RouterOutlet } from "@angular/router";
 import { AuthStore } from "../core/auth/auth.store";
 import { roleLabel } from "../shared/ui/status";
+import { ThemeToggleComponent } from "../shared/ui/theme-toggle.component";
 
 type NavItem = {
   path: string;
@@ -11,14 +12,21 @@ type NavItem = {
 
 @Component({
   selector: "app-shell",
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, ThemeToggleComponent],
   template: `
     <div class="app-shell">
       <header class="masthead">
         <a class="brand" routerLink="/">
           <svg class="brand-mark" viewBox="0 0 28 28" aria-hidden="true">
-            <circle cx="14" cy="14" r="6" fill="currentColor" />
-            <circle cx="14" cy="14" r="11" fill="none" stroke="currentColor" stroke-width="1.4" />
+            <circle cx="14" cy="14" r="5" fill="currentColor" />
+            <circle cx="14" cy="14" r="10" fill="none" stroke="currentColor" stroke-width="1.3" />
+            <path
+              d="M14 2v3M14 23v3M2 14h3M23 14h3M5.4 5.4l2 2M20.6 20.6l2 2M5.4 22.6l2-2M20.6 7.4l2-2"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.3"
+              stroke-linecap="round"
+            />
           </svg>
           Helios Altas
         </a>
@@ -29,14 +37,22 @@ type NavItem = {
               <span>{{ roleLabel(user.role) }}</span>
             </div>
           }
+          <app-theme-toggle />
           <button class="btn btn-ghost btn-sm" type="button" (click)="logout()">Sair</button>
         </div>
       </header>
       <nav class="nav-rail" aria-label="Navegação principal">
         <a class="brand" routerLink="/">
           <svg class="brand-mark" viewBox="0 0 28 28" aria-hidden="true">
-            <circle cx="14" cy="14" r="6" fill="currentColor" />
-            <circle cx="14" cy="14" r="11" fill="none" stroke="currentColor" stroke-width="1.4" />
+            <circle cx="14" cy="14" r="5" fill="currentColor" />
+            <circle cx="14" cy="14" r="10" fill="none" stroke="currentColor" stroke-width="1.3" />
+            <path
+              d="M14 2v3M14 23v3M2 14h3M23 14h3M5.4 5.4l2 2M20.6 20.6l2 2M5.4 22.6l2-2M20.6 7.4l2-2"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.3"
+              stroke-linecap="round"
+            />
           </svg>
           Helios Altas
         </a>

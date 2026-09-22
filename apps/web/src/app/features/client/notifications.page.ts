@@ -9,6 +9,7 @@ import { ClientApiService } from "./client-api.service";
         <div>
           <p class="kicker">Caixa</p>
           <h1>Notificações</h1>
+          <p class="lede">Recados do campo quando um pedido muda de estado.</p>
         </div>
       </header>
       @if (loading()) {

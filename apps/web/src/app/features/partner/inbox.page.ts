@@ -12,6 +12,7 @@ import { PartnerApiService } from "./partner-api.service";
         <div>
           <p class="kicker">Caixa</p>
           <h1>Solicitações recebidas</h1>
+          <p class="lede">Convites da vizinhança. Abra o pedido e decida no campo.</p>
         </div>
       </header>
       @if (loading()) {

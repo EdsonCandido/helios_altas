@@ -13,9 +13,10 @@ import { ClientApiService } from "../client/client-api.service";
         <div>
           <p class="kicker">Território</p>
           <h1>Mapas administrativos</h1>
+          <p class="lede">Dois recortes do mesmo solo: quem atende e onde a demanda se acumula.</p>
         </div>
       </header>
-      <form class="toolbar toolbar-2" (ngSubmit)="load()">
+      <form class="toolbar" (ngSubmit)="load()">
         <label class="field">
           Categoria
           <select name="categoryId" [(ngModel)]="categoryId">
@@ -38,11 +39,11 @@ import { ClientApiService } from "../client/client-api.service";
         <button class="btn btn-primary" type="submit">Filtrar</button>
       </form>
       <div class="maps-grid">
-        <section class="stack">
+        <section class="panel stack">
           <h2>Parceiros</h2>
           <app-map [markers]="partnerMarkers()" [cluster]="true" label="Mapa de parceiros" />
         </section>
-        <section class="stack">
+        <section class="panel stack">
           <h2>Concentração de solicitações</h2>
           <app-map [markers]="clusterMarkers()" [cluster]="true" label="Mapa de solicitações" />
         </section>

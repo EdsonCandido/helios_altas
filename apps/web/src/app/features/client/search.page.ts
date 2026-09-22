@@ -13,6 +13,7 @@ import { ClientApiService } from "./client-api.service";
         <div>
           <p class="kicker">Perto de você</p>
           <h1>Buscar parceiros</h1>
+          <p class="lede">Marque o ponto. O atlas devolve quem atende no raio da sua rua.</p>
         </div>
       </header>
       <form class="toolbar" (ngSubmit)="search()">
