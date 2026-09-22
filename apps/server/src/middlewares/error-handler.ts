@@ -4,6 +4,43 @@ import { AppError } from "../utils/errors.js";
 import { sendError } from "../utils/http.js";
 import { logger } from "../utils/logger.js";
 
+const fieldLabels: Record<string, string> = {
+  categoryId: "Categoria",
+  description: "Descrição do problema",
+  address: "Endereço",
+  addressNumber: "Número",
+  city: "Cidade",
+  state: "UF",
+  neighborhood: "Bairro",
+  latitude: "Latitude",
+  longitude: "Longitude",
+  isHomeService: "Atendimento na residência",
+  cep: "CEP",
+  reason: "Motivo",
+  serviceRadiusMeters: "Raio de atendimento",
+};
+
+function formatZodMessage(error: ZodError): {
+  message: string;
+  details: Array<{ field: string; message: string }>;
+} {
+  const details = error.issues.map((issue) => {
+    const field = issue.path.map(String).join(".") || "form";
+    return { field, message: issue.message };
+  });
+
+  const first = details[0];
+  if (!first) {
+    return { message: "Dados inválidos.", details: [] };
+  }
+
+  const label = fieldLabels[first.field] ?? first.field;
+  return {
+    message: `${label}: ${first.message}`,
+    details,
+  };
+}
+
 export function errorHandler(
   error: unknown,
   _req: Request,
@@ -11,7 +48,8 @@ export function errorHandler(
   _next: NextFunction,
 ): void {
   if (error instanceof ZodError) {
-    sendError(res, "VALIDATION_ERROR", error.issues[0]?.message ?? "Invalid input.", 400);
+    const formatted = formatZodMessage(error);
+    sendError(res, "VALIDATION_ERROR", formatted.message, 400, formatted.details);
     return;
   }
 

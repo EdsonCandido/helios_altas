@@ -11,6 +11,7 @@ export class CreateServiceRequest {
     categoryId: string;
     description: string;
     address: string;
+    addressNumber: string;
     city: string;
     state: string;
     neighborhood?: string;
@@ -34,6 +35,7 @@ export class CreateServiceRequest {
       categoryId: input.categoryId,
       description: input.description,
       address: input.address,
+      addressNumber: input.addressNumber,
       city: input.city,
       state: input.state,
       neighborhood: input.neighborhood,

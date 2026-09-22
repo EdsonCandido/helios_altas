@@ -18,6 +18,7 @@ export class ClientApiService {
         neighborhood: string;
         city: string;
         category: string;
+        categoryId: string;
         minimumVisitFeeCents: number;
         isAvailable: boolean;
         distanceMeters: number;

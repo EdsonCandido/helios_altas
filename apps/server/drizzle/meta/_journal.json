@@ -15,6 +15,20 @@
       "when": 1740000000001,
       "tag": "0001_init",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1740000000002,
+      "tag": "0002_partners_cep",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1740000000003,
+      "tag": "0003_service_requests_address_number",
+      "breakpoints": true
     }
   ]
 }

@@ -9,8 +9,9 @@ export function sendError(
   code: string,
   message: string,
   status: number,
+  details?: unknown,
 ): Response {
   return res.status(status).json({
-    error: { code, message },
+    error: details === undefined ? { code, message } : { code, message, details },
   });
 }

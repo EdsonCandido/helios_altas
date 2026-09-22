@@ -22,3 +22,4 @@ function createLimiter(prefix: string, windowMs: number, max: number) {
 
 export const apiRateLimiter = createLimiter("rl:api:", 60_000, 120);
 export const authRateLimiter = createLimiter("rl:auth:", 15 * 60_000, 20);
+export const geoRateLimiter = createLimiter("rl:geo:", 60_000, 30);

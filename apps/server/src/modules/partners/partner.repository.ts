@@ -151,6 +151,7 @@ export class PartnerRepository {
     const filters = [
       eq(users.status, "ACTIVE"),
       eq(partners.isProfileComplete, true),
+      eq(partnerServices.isActive, true),
       sql`${partners.location} IS NOT NULL`,
       sql`ST_DWithin(${partners.location}, ${origin}, LEAST(${partners.serviceRadiusMeters}, ${input.radiusMeters}))`,
     ];
@@ -161,7 +162,6 @@ export class PartnerRepository {
 
     if (input.categoryId) {
       filters.push(eq(partnerServices.categoryId, input.categoryId));
-      filters.push(eq(partnerServices.isActive, true));
     }
 
     return db
