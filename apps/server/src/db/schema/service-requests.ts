@@ -44,6 +44,7 @@ export const serviceRequests = pgTable(
       .references(() => serviceCategories.id),
     description: text("description").notNull(),
     address: text("address").notNull(),
+    addressNumber: text("address_number"),
     city: text("city").notNull(),
     state: text("state").notNull(),
     neighborhood: text("neighborhood"),

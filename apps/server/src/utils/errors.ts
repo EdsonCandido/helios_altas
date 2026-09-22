@@ -63,6 +63,18 @@ export class CategoryNotFoundError extends NotFoundError {
   }
 }
 
+export class CepNotFoundError extends NotFoundError {
+  constructor() {
+    super("CEP_NOT_FOUND", "CEP was not found.");
+  }
+}
+
+export class GeocodeNotFoundError extends NotFoundError {
+  constructor() {
+    super("GEOCODE_NOT_FOUND", "Location address was not found.");
+  }
+}
+
 export class ServiceRequestNotFoundError extends NotFoundError {
   constructor() {
     super("SERVICE_REQUEST_NOT_FOUND", "Service request was not found.");

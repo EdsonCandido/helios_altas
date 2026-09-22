@@ -6,6 +6,7 @@ import {
   Input,
   OnChanges,
   Output,
+  SimpleChanges,
   ViewChild,
 } from "@angular/core";
 import * as L from "leaflet";
@@ -23,6 +24,7 @@ export class MapComponent implements AfterViewInit, OnChanges {
   @Input() markers: Array<{ lat: number; lng: number; label: string }> = [];
   @Input() cluster = false;
   @Input() clickable = false;
+  @Input() draggable = false;
   @Output() pick = new EventEmitter<{ lat: number; lng: number }>();
 
   private map?: L.Map;
@@ -44,7 +46,19 @@ export class MapComponent implements AfterViewInit, OnChanges {
     queueMicrotask(() => this.map?.invalidateSize());
   }
 
-  ngOnChanges(): void {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.map) {
+      return;
+    }
+
+    if (changes["center"] && this.center) {
+      const [lat, lng] = this.center;
+      const current = this.map.getCenter();
+      if (Math.abs(current.lat - lat) > 1e-6 || Math.abs(current.lng - lng) > 1e-6) {
+        this.map.setView([lat, lng], this.zoom);
+      }
+    }
+
     this.render();
   }
 
@@ -55,11 +69,31 @@ export class MapComponent implements AfterViewInit, OnChanges {
 
     this.layer?.remove();
     this.layer = this.cluster ? L.markerClusterGroup() : L.layerGroup();
+    const color = this.markerColor();
 
     for (const marker of this.markers) {
-      L.circleMarker([marker.lat, marker.lng], { radius: 8, color: this.markerColor() })
-        .bindPopup(marker.label)
-        .addTo(this.layer);
+      if (this.draggable && !this.cluster) {
+        const pin = L.marker([marker.lat, marker.lng], {
+          draggable: true,
+          icon: L.divIcon({
+            className: "map-pin",
+            html: `<span style="display:block;width:16px;height:16px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></span>`,
+            iconSize: [16, 16],
+            iconAnchor: [8, 8],
+          }),
+        }).bindPopup(marker.label);
+
+        pin.on("dragend", () => {
+          const position = pin.getLatLng();
+          this.pick.emit({ lat: position.lat, lng: position.lng });
+        });
+
+        pin.addTo(this.layer);
+      } else {
+        L.circleMarker([marker.lat, marker.lng], { radius: 8, color })
+          .bindPopup(marker.label)
+          .addTo(this.layer);
+      }
     }
 
     this.layer.addTo(this.map);
@@ -67,6 +101,6 @@ export class MapComponent implements AfterViewInit, OnChanges {
   }
 
   private markerColor(): string {
-    return getComputedStyle(document.documentElement).getPropertyValue("--color-primary").trim();
+    return getComputedStyle(document.documentElement).getPropertyValue("--color-primary").trim() || "#2563eb";
   }
 }

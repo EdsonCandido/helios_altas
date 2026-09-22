@@ -2,6 +2,10 @@ import { z } from "zod";
 
 export const updatePartnerSchema = z.object({
   description: z.string().min(10).max(2000).optional(),
+  cep: z
+    .string()
+    .regex(/^\d{5}-?\d{3}$/, "CEP must be in format 00000-000")
+    .optional(),
   address: z.string().min(3).max(255).optional(),
   city: z.string().min(2).max(120).optional(),
   state: z.string().min(2).max(2).optional(),

@@ -41,6 +41,7 @@ export class GetServiceRequest {
       city: request.city,
       neighborhood: request.neighborhood,
       address: canSeeExactLocation ? request.address : undefined,
+      addressNumber: canSeeExactLocation ? request.addressNumber : undefined,
       latitude: canSeeExactLocation ? Number(request.latitude) : undefined,
       longitude: canSeeExactLocation ? Number(request.longitude) : undefined,
       acceptedPartnerName: detail.acceptedPartnerName,

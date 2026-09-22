@@ -1,7 +1,10 @@
 import { Component, inject, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { ClientApiService } from "../client/client-api.service";
+import { getApiErrorMessage } from "../../core/api/api-error";
+import { formatCep, isValidCep } from "../../shared/br/cep.util";
+import { GeoApiService, type GeoAddress } from "../../shared/geo/geo-api.service";
 import { MapComponent } from "../../shared/map/map.component";
+import { ClientApiService } from "../client/client-api.service";
 import { PartnerApiService } from "./partner-api.service";
 
 @Component({
@@ -29,6 +32,18 @@ import { PartnerApiService } from "./partner-api.service";
               <textarea name="description" [(ngModel)]="description"></textarea>
             </label>
             <div class="form-grid">
+              <label class="field">
+                CEP *
+                <input
+                  name="cep"
+                  [(ngModel)]="cep"
+                  (ngModelChange)="handleCepChange($event)"
+                  maxlength="9"
+                  inputmode="numeric"
+                  autocomplete="postal-code"
+                  required
+                />
+              </label>
               <label class="field span-2">Endereço <input name="address" [(ngModel)]="address" /></label>
               <label class="field">Bairro <input name="neighborhood" [(ngModel)]="neighborhood" /></label>
               <label class="field">Cidade <input name="city" [(ngModel)]="city" /></label>
@@ -54,10 +69,13 @@ import { PartnerApiService } from "./partner-api.service";
               </div>
             </fieldset>
             <div class="actions">
-              <button class="btn btn-primary" type="submit" [disabled]="saving()">
+              <button class="btn btn-primary" type="submit" [disabled]="saving() || lookingUp()">
                 {{ saving() ? "Salvando…" : "Salvar" }}
               </button>
             </div>
+            @if (error()) {
+              <p class="status status-danger">{{ error() }}</p>
+            }
             @if (saved()) {
               <p class="status status-success">Perfil atualizado</p>
             }
@@ -68,8 +86,12 @@ import { PartnerApiService } from "./partner-api.service";
               [center]="[latitude || -23.55, longitude || -46.63]"
               [markers]="markers"
               [clickable]="true"
+              [draggable]="true"
               (pick)="pick($event.lat, $event.lng)"
             />
+            @if (lookingUp()) {
+              <p class="status">Atualizando endereço…</p>
+            }
           </div>
         </form>
       }
@@ -79,7 +101,12 @@ import { PartnerApiService } from "./partner-api.service";
 export class PartnerProfilePage {
   private readonly api = inject(PartnerApiService);
   private readonly categoriesApi = inject(ClientApiService);
+  private readonly geoApi = inject(GeoApiService);
+  private cepLookupTimer?: ReturnType<typeof setTimeout>;
+  private syncSource: "cep" | "map" | null = null;
+
   description = "";
+  cep = "";
   address = "";
   neighborhood = "";
   city = "";
@@ -94,12 +121,15 @@ export class PartnerProfilePage {
   saved = signal(false);
   loading = signal(true);
   saving = signal(false);
+  lookingUp = signal(false);
+  error = signal("");
 
   constructor() {
     this.categoriesApi.categories().subscribe((items) => this.categories.set(items));
     this.api.me().subscribe({
       next: (item) => {
         this.description = String(item["description"] ?? "");
+        this.cep = formatCep(String(item["cep"] ?? ""));
         this.address = String(item["address"] ?? "");
         this.neighborhood = String(item["neighborhood"] ?? "");
         this.city = String(item["city"] ?? "");
@@ -119,10 +149,47 @@ export class PartnerProfilePage {
     });
   }
 
+  handleCepChange(value: string): void {
+    this.cep = formatCep(value);
+    this.error.set("");
+    this.saved.set(false);
+
+    if (this.syncSource !== null) {
+      return;
+    }
+
+    if (this.cepLookupTimer) {
+      clearTimeout(this.cepLookupTimer);
+    }
+
+    if (!isValidCep(this.cep)) {
+      return;
+    }
+
+    this.cepLookupTimer = setTimeout(() => this.lookupFromCep(), 400);
+  }
+
   pick(lat: number, lng: number): void {
     this.latitude = lat;
     this.longitude = lng;
     this.markers = [{ lat, lng, label: "Base de atendimento" }];
+    this.error.set("");
+    this.saved.set(false);
+    this.lookingUp.set(true);
+    this.syncSource = "map";
+
+    this.geoApi.reverse(lat, lng).subscribe({
+      next: (result) => {
+        this.applyAddress(result, "map");
+        this.lookingUp.set(false);
+        this.syncSource = null;
+      },
+      error: (err: unknown) => {
+        this.lookingUp.set(false);
+        this.syncSource = null;
+        this.error.set(getApiErrorMessage(err, "Não foi possível obter o endereço a partir do mapa."));
+      },
+    });
   }
 
   toggle(id: string): void {
@@ -136,10 +203,19 @@ export class PartnerProfilePage {
   }
 
   save(): void {
+    this.error.set("");
+    this.saved.set(false);
+
+    if (!isValidCep(this.cep)) {
+      this.error.set("Informe um CEP válido no formato 00000-000.");
+      return;
+    }
+
     this.saving.set(true);
     this.api
       .update({
         description: this.description,
+        cep: this.cep,
         address: this.address,
         neighborhood: this.neighborhood,
         city: this.city,
@@ -169,10 +245,61 @@ export class PartnerProfilePage {
                 this.saving.set(false);
                 this.saved.set(true);
               },
-              error: () => this.saving.set(false),
+              error: (err: unknown) => {
+                this.saving.set(false);
+                this.error.set(getApiErrorMessage(err, "Não foi possível salvar os serviços."));
+              },
             });
         },
-        error: () => this.saving.set(false),
+        error: (err: unknown) => {
+          this.saving.set(false);
+          this.error.set(getApiErrorMessage(err, "Não foi possível salvar o perfil."));
+        },
       });
+  }
+
+  private lookupFromCep(): void {
+    this.lookingUp.set(true);
+    this.syncSource = "cep";
+    this.geoApi.lookupCep(this.cep).subscribe({
+      next: (result) => {
+        this.applyAddress(result, "cep");
+        this.lookingUp.set(false);
+        this.syncSource = null;
+      },
+      error: (err: unknown) => {
+        this.lookingUp.set(false);
+        this.syncSource = null;
+        this.error.set(getApiErrorMessage(err, "CEP não encontrado."));
+      },
+    });
+  }
+
+  private applyAddress(result: GeoAddress, source: "cep" | "map"): void {
+    if (result.cep) {
+      this.cep = formatCep(result.cep);
+    }
+    if (result.address) {
+      this.address = result.address;
+    }
+    if (result.neighborhood) {
+      this.neighborhood = result.neighborhood;
+    }
+    if (result.city) {
+      this.city = result.city;
+    }
+    if (result.state) {
+      this.state = result.state;
+    }
+
+    if (result.latitude !== null && result.longitude !== null) {
+      this.latitude = result.latitude;
+      this.longitude = result.longitude;
+      this.markers = [
+        { lat: result.latitude, lng: result.longitude, label: "Base de atendimento" },
+      ];
+    } else if (source === "cep") {
+      this.error.set("Endereço encontrado, mas sem coordenadas. Clique no mapa para marcar a base.");
+    }
   }
 }

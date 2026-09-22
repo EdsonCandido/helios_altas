@@ -1,8 +1,17 @@
 import { PartnerNotFoundError } from "../../utils/errors.js";
 import { partnerRepository } from "./partner.repository.js";
 
+function formatCep(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 8);
+  if (digits.length !== 8) {
+    return value;
+  }
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+}
+
 function isProfileComplete(input: {
   description?: string | null;
+  cep?: string | null;
   address?: string | null;
   city?: string | null;
   latitude?: string | null;
@@ -11,6 +20,7 @@ function isProfileComplete(input: {
 }) {
   return Boolean(
     input.description &&
+      input.cep &&
       input.address &&
       input.city &&
       input.latitude &&
@@ -38,6 +48,7 @@ export class UpdatePartner {
     userId: string,
     input: {
       description?: string;
+      cep?: string;
       address?: string;
       city?: string;
       state?: string;
@@ -52,9 +63,11 @@ export class UpdatePartner {
       throw new PartnerNotFoundError();
     }
 
+    const nextCep = input.cep !== undefined ? formatCep(input.cep) : partner.cep;
     const services = await partnerRepository.listServices(partner.id);
     const updated = await partnerRepository.update(userId, {
       description: input.description ?? partner.description,
+      cep: nextCep,
       address: input.address ?? partner.address,
       city: input.city ?? partner.city,
       state: input.state ?? partner.state,
@@ -64,6 +77,7 @@ export class UpdatePartner {
       serviceRadiusMeters: input.serviceRadiusMeters ?? partner.serviceRadiusMeters,
       isProfileComplete: isProfileComplete({
         description: input.description ?? partner.description,
+        cep: nextCep,
         address: input.address ?? partner.address,
         city: input.city ?? partner.city,
         latitude: input.latitude !== undefined ? String(input.latitude) : partner.latitude,

@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { authenticate } from "../middlewares/authenticate.js";
 import { authorize } from "../middlewares/authorize.js";
-import { authRateLimiter } from "../middlewares/rate-limit.js";
+import { authRateLimiter, geoRateLimiter } from "../middlewares/rate-limit.js";
 import { adminController } from "../modules/admin/admin.controller.js";
 import { authController } from "../modules/auth/auth.controller.js";
 import { categoryController } from "../modules/categories/category.controller.js";
+import { geoController } from "../modules/geo/geo.controller.js";
 import { notificationController } from "../modules/notifications/notification.controller.js";
 import { partnerController } from "../modules/partners/partner.controller.js";
 import { serviceRequestController } from "../modules/service-requests/service-request.controller.js";
@@ -68,6 +69,19 @@ export function createRoutes(): Router {
   router.get("/partners/:id", authenticate, asyncHandler(partnerController.publicProfile.bind(partnerController)));
 
   router.get("/categories", asyncHandler(categoryController.list.bind(categoryController)));
+
+  router.get(
+    "/geo/cep/:cep",
+    authenticate,
+    geoRateLimiter,
+    asyncHandler(geoController.lookupCep.bind(geoController)),
+  );
+  router.get(
+    "/geo/reverse",
+    authenticate,
+    geoRateLimiter,
+    asyncHandler(geoController.reverse.bind(geoController)),
+  );
 
   router.post(
     "/service-requests",

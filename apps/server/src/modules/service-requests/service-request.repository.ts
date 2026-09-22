@@ -23,6 +23,7 @@ export class ServiceRequestRepository {
     categoryId: string;
     description: string;
     address: string;
+    addressNumber: string;
     city: string;
     state: string;
     neighborhood?: string;

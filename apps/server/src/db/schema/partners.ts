@@ -23,6 +23,7 @@ export const partners = pgTable(
       .unique()
       .references(() => users.id),
     description: text("description"),
+    cep: text("cep"),
     address: text("address"),
     city: text("city"),
     state: text("state"),

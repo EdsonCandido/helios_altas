@@ -28,7 +28,10 @@ import { PartnerApiService } from "./partner-api.service";
             <p>{{ request["description"] }}</p>
             <p class="meta">{{ request["neighborhood"] }}, {{ request["city"] }}</p>
             @if (request["address"]) {
-              <p class="meta">{{ request["address"] }}</p>
+              <p class="meta">
+                {{ request["address"] }}@if (request["addressNumber"]) {, {{ request["addressNumber"] }}
+                }
+              </p>
             }
           </article>
           <aside class="detail-aside panel">
